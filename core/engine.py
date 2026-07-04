@@ -56,7 +56,7 @@ mechanical check might miss -- e.g. scope creep (invoice bills for work
 outside the contracted scope), ambiguous or inconsistent descriptions,
 or anything else that looks off. Do NOT repeat simple math errors or
 rate overages -- those are already checked separately.
-
+{custom_instructions_block}
 STRICT RULES:
 - If you find nothing noteworthy, return {{"issues": []}} -- an empty list.
   Do NOT invent a placeholder or filler issue just to have something to say.
@@ -81,11 +81,21 @@ INVOICE:
 """
 
 
-def run_llm_judgment(invoice_data: dict, contract_data: dict) -> list:
+def run_llm_judgment(invoice_data: dict, contract_data: dict, custom_instructions: str = "") -> list:
     import json
+
+    custom_block = ""
+    if custom_instructions and custom_instructions.strip():
+        custom_block = (
+            "\nThe controller has ALSO asked you to specifically check for the "
+            "following (apply these in addition to your normal judgment):\n"
+            f"{custom_instructions.strip()}\n"
+        )
+
     prompt = JUDGMENT_PROMPT.format(
         contract_json=json.dumps(contract_data, default=str),
         invoice_json=json.dumps(invoice_data, default=str),
+        custom_instructions_block=custom_block,
     )
     result = extract_json(prompt)
     raw_issues = result.get("issues", [])
@@ -104,7 +114,7 @@ def run_llm_judgment(invoice_data: dict, contract_data: dict) -> list:
     return clean_issues
 
 
-def process_invoice(invoice_path: str, contracts: list, amendments: list) -> dict:
+def process_invoice(invoice_path: str, contracts: list, amendments: list, custom_instructions: str = "") -> dict:
     """
     Returns a report entry:
     {
@@ -147,7 +157,7 @@ def process_invoice(invoice_path: str, contracts: list, amendments: list) -> dic
     # (Failures here are logged, not shown to the user as a fake "issue" --
     # a broken AI call is not a real invoice discrepancy.)
     try:
-        for issue in run_llm_judgment(invoice_data, effective_contract):
+        for issue in run_llm_judgment(invoice_data, effective_contract, custom_instructions):
             all_issues.append({
                 "rule": "llm_judgment",
                 "category": RULE_CATEGORY_LABELS["llm_judgment"],
