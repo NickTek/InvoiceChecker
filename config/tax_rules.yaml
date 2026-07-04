@@ -1,0 +1,29 @@
+# config/tax_rules.yaml
+#
+# Define your own cross-border tax rules here -- no coding required.
+# The engine does NOT guess tax law on its own; it only checks against
+# whatever rules you configure here. Edit freely for your own jurisdictions.
+#
+# Each rule:
+#   vendor_country:      country the vendor is based in
+#   buyer_country:        country your company is based in
+#   tax_should_be_zero:   true  -> tax should NOT be charged on this route
+#                          false -> tax SHOULD be charged on this route
+#   label:                short description shown in the flagged message
+
+rules:
+  - vendor_country: "Switzerland"
+    buyer_country: "India"
+    tax_should_be_zero: true
+    label: "Export of services - Swiss VAT should not apply to Indian buyer"
+
+  - vendor_country: "Germany"
+    buyer_country: "Germany"
+    tax_should_be_zero: false
+    label: "Domestic German transaction - VAT should apply"
+
+  # Add more rules below following the same pattern:
+  # - vendor_country: "United States"
+  #   buyer_country: "United Kingdom"
+  #   tax_should_be_zero: true
+  #   label: "Cross-border export - no US sales tax expected"

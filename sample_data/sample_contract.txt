@@ -1,0 +1,18 @@
+SERVICE AGREEMENT
+
+Contract ID: CNT-2025-014
+Vendor: Northwind Analytics Ltd
+Vendor Country: United Kingdom
+Buyer: Sample Buyer Corp
+Buyer Country: India
+
+Scope of Work: Monthly data analytics and reporting services covering
+sales dashboards and quarterly business review support.
+
+Rate: 2,500 USD per month
+Payment Terms: Net 30 days from invoice date.
+Contract Start Date: 2025-01-01
+Contract End Date: 2026-12-31
+
+Tax Treatment: This is an export of services. No UK VAT applies to
+services rendered to the Buyer outside the United Kingdom.

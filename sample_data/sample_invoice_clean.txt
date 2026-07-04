@@ -1,0 +1,15 @@
+INVOICE
+
+Invoice Number: INV-8843
+Vendor: Northwind Analytics Ltd
+Vendor Country: United Kingdom
+Buyer Country: India
+Contract Reference: CNT-2025-014
+Invoice Date: 2025-09-20
+
+Line Items:
+1. Monthly Analytics & Reporting Services - Qty 1 - Unit Price 2,800 USD - Amount 2,800 USD
+
+Subtotal: 2,800 USD
+Tax: 0 USD
+Total: 2,800 USD
