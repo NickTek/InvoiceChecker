@@ -20,35 +20,48 @@ st.set_page_config(page_title="Invoice & Contract Compliance Checker", layout="w
 st.markdown("""
 <style>
     #MainMenu, footer, header {visibility: hidden;}
-    .block-container { padding-top: 2rem; max-width: 1100px; }
-    html, body, [class*="css"] { font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+
+    .stApp { background-color: #ffffff; }
+    .block-container { padding-top: 2rem; max-width: 1100px; background-color: #ffffff; }
+    html, body, [class*="css"] { font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        color: #1a1f36; }
+
+    p, span, div, label, li { color: #1a1f36; }
 
     .app-header { border-bottom: 1px solid #dfe3e8; padding-bottom: 1.1rem; margin-bottom: 1.6rem; }
-    .app-header h1 { font-size: 1.65rem; font-weight: 600; color: #1a1f36; margin: 0 0 0.3rem 0; }
-    .app-header p { color: #5b6270; font-size: 0.95rem; margin: 0; }
+    .app-header h1 { font-size: 1.65rem; font-weight: 600; color: #1a1f36 !important; margin: 0 0 0.3rem 0; }
+    .app-header p { color: #5b6270 !important; font-size: 0.95rem; margin: 0; }
 
     .section-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
-        color: #7a8090; text-transform: uppercase; margin: 1.4rem 0 0.5rem 0; }
+        color: #7a8090 !important; text-transform: uppercase; margin: 1.4rem 0 0.5rem 0; }
 
     .instructions-box { background-color: #f6f7f9; border: 1px solid #e3e6ea; border-radius: 6px;
-        padding: 0.9rem 1.1rem; font-size: 0.88rem; color: #3d4250; line-height: 1.55; margin-bottom: 1rem; }
+        padding: 0.9rem 1.1rem; font-size: 0.88rem; color: #3d4250 !important; line-height: 1.55; margin-bottom: 1rem; }
+    .instructions-box strong { color: #1a1f36 !important; }
+    .instructions-box li { color: #3d4250 !important; }
     .instructions-box ol { margin: 0.3rem 0 0 1.1rem; padding: 0; }
 
     .status-pill { display: inline-block; padding: 2px 11px; border-radius: 3px;
         font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
-    .status-clean   { background-color: #e6f4ea; color: #1c7c37; }
-    .status-flagged { background-color: #fbe9e9; color: #b3261e; }
-    .status-nomatch { background-color: #fdf2e0; color: #97660a; }
+    .status-clean   { background-color: #e6f4ea; color: #1c7c37 !important; }
+    .status-flagged { background-color: #fbe9e9; color: #b3261e !important; }
+    .status-nomatch { background-color: #fdf2e0; color: #97660a !important; }
 
-    .metric-card { border: 1px solid #e3e6ea; border-radius: 6px; padding: 0.9rem 1.1rem; text-align: left; }
-    .metric-card .label { font-size: 0.75rem; color: #7a8090; text-transform: uppercase;
+    .metric-card { border: 1px solid #e3e6ea; border-radius: 6px; padding: 0.9rem 1.1rem;
+        text-align: left; background-color: #ffffff; }
+    .metric-card .label { font-size: 0.75rem; color: #7a8090 !important; text-transform: uppercase;
         letter-spacing: 0.04em; margin-bottom: 0.25rem; }
-    .metric-card .value { font-size: 1.35rem; font-weight: 700; color: #1a1f36; }
-    .metric-card .subtext { font-size: 0.75rem; color: #8a90a0; margin-top: 0.15rem; }
+    .metric-card .value { font-size: 1.35rem; font-weight: 700; color: #1a1f36 !important; }
+    .metric-card .subtext { font-size: 0.75rem; color: #8a90a0 !important; margin-top: 0.15rem; }
 
-    div.stButton > button { background-color: #1a1f36; color: white; border-radius: 5px;
+    div.stButton > button { background-color: #1a1f36; color: #ffffff !important; border-radius: 5px;
         border: none; padding: 0.55rem 1.4rem; font-weight: 600; }
-    div.stButton > button:hover { background-color: #2c3352; color: white; }
+    div.stButton > button:hover { background-color: #2c3352; color: #ffffff !important; }
+    div.stButton > button p { color: #ffffff !important; }
+
+    /* File uploader and text areas: force readable text on a white background */
+    [data-testid="stFileUploaderDropzone"] { background-color: #f6f7f9 !important; }
+    .stTextArea textarea { color: #1a1f36 !important; background-color: #ffffff !important; }
 </style>
 """, unsafe_allow_html=True)
 
