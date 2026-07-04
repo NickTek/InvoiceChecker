@@ -122,7 +122,7 @@ def process_invoice(invoice_path: str, contracts: list, amendments: list, custom
       "invoice_data": {...},
       "matched_contract": path or None,
       "status": "Clean" | "Flagged" | "No Matching Contract Found",
-      "issues": [ {"rule": ..., "category": ..., "severity": ..., "message": ...}, ... ]
+      "issues": [ {"rule": ..., "severity": ..., "message": ...}, ... ]
     }
     """
     invoice_text = extract_text(invoice_path)
