@@ -19,6 +19,16 @@ from core.match import find_best_contract, find_relevant_amendments, apply_amend
 from core.llm import extract_json
 from rules.registry import get_active_rules
 
+# Human-readable labels shown in the UI instead of raw internal rule names.
+RULE_CATEGORY_LABELS = {
+    "arithmetic_check": "Invoice Math Error",
+    "staleness_check": "Old / Stale Invoice",
+    "rate_mismatch_check": "Rate Overcharge",
+    "tax_jurisdiction_check": "Tax / Jurisdiction Issue",
+    "missing_reference_check": "Missing Contract Reference",
+    "llm_judgment": "Needs Review",
+}
+
 
 def load_contracts(file_paths: list) -> list:
     """Parse a list of contract file paths into structured data (once, upfront)."""
@@ -47,7 +57,14 @@ outside the contracted scope), ambiguous or inconsistent descriptions,
 or anything else that looks off. Do NOT repeat simple math errors or
 rate overages -- those are already checked separately.
 
-If you find nothing noteworthy, return an empty list.
+STRICT RULES:
+- If you find nothing noteworthy, return {{"issues": []}} -- an empty list.
+  Do NOT invent a placeholder or filler issue just to have something to say.
+- Every issue you DO include must have a complete, specific, plain-English
+  "message" of at least one full sentence. Never return an issue with a
+  blank, missing, or one-word message.
+- Only include an issue if you are reasonably confident it reflects a real
+  discrepancy, not a stylistic observation.
 
 Return ONLY valid JSON in this shape:
 {{
@@ -71,7 +88,20 @@ def run_llm_judgment(invoice_data: dict, contract_data: dict) -> list:
         invoice_json=json.dumps(invoice_data, default=str),
     )
     result = extract_json(prompt)
-    return result.get("issues", [])
+    raw_issues = result.get("issues", [])
+
+    # Defensive filtering: drop any issue that isn't a real, substantive
+    # explanation. This protects against the model occasionally returning
+    # empty/placeholder issues even when instructed not to.
+    clean_issues = []
+    for issue in raw_issues:
+        if not isinstance(issue, dict):
+            continue
+        message = (issue.get("message") or "").strip()
+        if len(message) < 15:  # too short to be a real explanation
+            continue
+        clean_issues.append(issue)
+    return clean_issues
 
 
 def process_invoice(invoice_path: str, contracts: list, amendments: list) -> dict:
@@ -82,7 +112,7 @@ def process_invoice(invoice_path: str, contracts: list, amendments: list) -> dic
       "invoice_data": {...},
       "matched_contract": path or None,
       "status": "Clean" | "Flagged" | "No Matching Contract Found",
-      "issues": [ {"rule": ..., "severity": ..., "message": ...}, ... ]
+      "issues": [ {"rule": ..., "category": ..., "severity": ..., "message": ...}, ... ]
     }
     """
     invoice_text = extract_text(invoice_path)
@@ -108,24 +138,24 @@ def process_invoice(invoice_path: str, contracts: list, amendments: list) -> dic
         for issue in rule.check(invoice_data, effective_contract):
             all_issues.append({
                 "rule": issue.rule_name,
+                "category": RULE_CATEGORY_LABELS.get(issue.rule_name, issue.rule_name),
                 "severity": issue.severity,
                 "message": issue.message,
             })
 
     # LLM judgment pass for fuzzier issues the rules can't catch.
+    # (Failures here are logged, not shown to the user as a fake "issue" --
+    # a broken AI call is not a real invoice discrepancy.)
     try:
         for issue in run_llm_judgment(invoice_data, effective_contract):
             all_issues.append({
                 "rule": "llm_judgment",
+                "category": RULE_CATEGORY_LABELS["llm_judgment"],
                 "severity": issue.get("severity", "low"),
                 "message": issue.get("message", ""),
             })
     except Exception as e:
-        all_issues.append({
-            "rule": "llm_judgment",
-            "severity": "low",
-            "message": f"(LLM judgment pass failed to run: {e})",
-        })
+        print(f"[warning] LLM judgment pass failed for {invoice_path}: {e}")
 
     return {
         "invoice_path": invoice_path,
