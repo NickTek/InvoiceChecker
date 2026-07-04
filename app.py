@@ -95,17 +95,17 @@ if st.button("🔍 Check Invoices Against Contracts", type="primary"):
                     report_rows.append({
                         "Invoice": r["invoice_name"],
                         "Status": r["status"],
-                        "Rule": issue["rule"],
-                        "Severity": issue["severity"],
-                        "Issue": issue["message"],
+                        "Issue Category": issue.get("category", issue["rule"]),
+                        "Severity": issue["severity"].title(),
+                        "Explanation": issue["message"],
                     })
             else:
                 report_rows.append({
                     "Invoice": r["invoice_name"],
                     "Status": r["status"],
-                    "Rule": "—",
+                    "Issue Category": "—",
                     "Severity": "—",
-                    "Issue": "No issues found.",
+                    "Explanation": "No issues found.",
                 })
         report_df = pd.DataFrame(report_rows)
         excel_path = os.path.join(tempfile.gettempdir(), "invoice_check_report.xlsx")
@@ -118,16 +118,40 @@ if st.button("🔍 Check Invoices Against Contracts", type="primary"):
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
 
-        # Detailed view per invoice
+        # Detailed view per invoice -- plain-English facts + a clean issue table.
+        # No raw JSON is shown here; everything is written out in normal language.
         st.subheader("Details")
         for r in results:
             icon = "✅" if r["status"] == "Clean" else ("🚩" if r["status"] == "Flagged" else "⚠️")
             with st.expander(f"{icon} {r['invoice_name']} — {r['status']}"):
-                if r["amendments_applied"] if "amendments_applied" in r else []:
-                    st.write("**Amendments applied:**", r.get("amendments_applied"))
+                data = r["invoice_data"] or {}
+
+                st.markdown(
+                    f"**Vendor:** {data.get('vendor_name') or 'Not found'}  \n"
+                    f"**Invoice Number:** {data.get('invoice_number') or 'Not found'}  \n"
+                    f"**Invoice Date:** {data.get('invoice_date') or 'Not found'}  \n"
+                    f"**Total:** {data.get('total') if data.get('total') is not None else 'Not found'} "
+                    f"{data.get('currency') or ''}  \n"
+                    f"**Matched Contract:** "
+                    f"{os.path.basename(r['matched_contract']) if r['matched_contract'] else 'No matching contract found'}"
+                )
+
+                amendments_applied = r.get("amendments_applied") or []
+                if amendments_applied:
+                    st.markdown("**Amendments applied to this contract:**")
+                    for summary in amendments_applied:
+                        st.markdown(f"- {summary}")
+
                 if r["issues"]:
-                    for issue in r["issues"]:
-                        st.markdown(f"- **[{issue['severity'].upper()}]** ({issue['rule']}) {issue['message']}")
+                    st.markdown("**Issues found:**")
+                    issue_table = pd.DataFrame([
+                        {
+                            "Issue Category": issue.get("category", issue["rule"]),
+                            "Severity": issue["severity"].title(),
+                            "Explanation": issue["message"],
+                        }
+                        for issue in r["issues"]
+                    ])
+                    st.table(issue_table)
                 else:
-                    st.write("No issues found.")
-                st.json(r["invoice_data"])
+                    st.markdown("✅ No issues found — this invoice matches the contract terms.")
